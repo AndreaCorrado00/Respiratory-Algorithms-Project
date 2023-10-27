@@ -24,7 +24,7 @@ sets=["AER","BAS","CRO","FIT","JOG","MID","RUN","SOC","TEN","ZUM"];
 
 % Second attemp with ar model:
 Fs=250;
-for i=1:1
+for i=1:10
     if i==5
         ECG=database.(sets(i)).S1.C3.data(:,3);
     elseif i==8
@@ -32,6 +32,9 @@ for i=1:1
     else
         ECG=database.(sets(i)).S1.C1.data(:,3);
     end
+if sum(isnan(ECG))>0
+    ECG(isnan(ECG))=0;
+end
 
 
 % PERIODOGRAM
@@ -42,15 +45,19 @@ for i=1:1
 % f_S=0:Fs/N:Fs-Fs/N;%vettore delle frequenza
 
 % AR MODEL
-N=length(ECG);
+N=length(ECG(1:10000));
 p=30;
-th=ar(ECG,p,'yw');
+th=ar(ECG(1:10000),p,'yw');
 [H,f]=freqz(1,th.a,N,Fs); 
 f_S=f;
-DSP=(abs(H).^2)*th.NoiseVariance;
+S=(abs(H).^2)*th.NoiseVariance;
 
-figure(1)
+subplot(5,2,i)
 plot(f_S,S,'b')
 title(['sdf signal ',num2str(i)])
-xlim([0,Fs/2])
+xlim([0,10])
 end
+
+% to do:
+% 1. Verify the quality of the spectrum (change the order)
+% 2. Understand where the ecg should be in frequency 
