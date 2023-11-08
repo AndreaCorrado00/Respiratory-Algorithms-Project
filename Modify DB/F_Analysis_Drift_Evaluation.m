@@ -59,35 +59,18 @@ if check
     end
 end
 
-%% ECG FILTERING
+%% ECG FILTERING: Traditional way
 % 2. Understand where the ecg should be in frequency: 0.05-150 Hz
-%% filter parametrs in Hz
-Fc=250; %Hz
-Wp=0.5;%Hz
-Ws=(Wp-Wp/2);
-                     
-Rp=0.90; % percentage
-Rs=0.1;
 
-
-%% Parameters conversion
-Wp=Wp/(Fc/2);
-Ws=Ws/(Fc/2);
-Rp=-20*log10(Rp);
-Rs=-20*log10(Rs);
-
-%% Filter determination
-[n,Wn]=ellipord(Wp,Ws,Rp,Rs);
-[b,a]=ellip(n,Rp,Rs,Wn,"low"); 
-
-%% Freq response
-[H,f]=freqz(b,a,512,Fc);
+%% LP Filter
+[H,f,b,a]=my_ellip_filt(250,0.5,0.6,0.9,0.005,'low');
+%  Freq response
 figure(1)
 plot(f,abs(H))
 xlim([0 15])
 ylim([0 1.2])
 grid on
-title('Modulo del filtro')
+title('Magnitude Low Pass')
 
 %% Filtering 
 % Perfomances of the filter
@@ -113,7 +96,7 @@ for i=1:10
     xlim([0,5000])
 end
 % Overall, the filter looks good for all the ecg traks. Technically, the
-% drift is almost good for each track. So the signal can be easily detected
+% drift is almost good for each track. So the signal seem to be detectable
 % without hp on the breath signal. 
 
 % Now there are two main problems: 
@@ -125,36 +108,13 @@ end
 % ecg signal and the drift avaluated simply filtering the raw ecg. How to
 % evaluate the BR rithm from the drift?
 
+% There is an other problem: how to deal with the fact that, surely, once
+% you have filterde the signal you have lost even a part of the information
+% on the respiratory signal? 
+
 %% Deep into the problem
-% Between each maximum of the signal drift there is a time: the BR can be
-% computed as: 1:peak_time=x_br:time_min -> time_min/peak_time=x_br
-% But now what do you want? You have the BP signal -> there is yet a way
-% to compute it. So which are the next steps? Where is the novelty?
-% Why not validate a model capable of represent the respiratory signal? 
-
-% Instead of finding the maximum could i use some geometry? If I build an
-% orizontal line parametrized on the values of the ecg drift, every 2
-% interceptions with the drift signal there will be a max and a min (it's a
-% strong hp on the regularity of the signal). Moreover, the drift should be
-% centered into zero. 
-% The problem is that we don't have a signal enought regoular to ensure
-% this hp. So? A possibility is make a strong smoothing...but this will
-% make an other strong convolutional operation so not so good. So how?
-
-% Moreover the huge amount of data caould compromize the overall result...
-
-% The line idea is too easy. An other possibility is regolize the signal by
-% using some smoothing algorithms or by identifing a good ar/ma model, why
-% not. If the model describes correctly the signal variation, it could be
-% possible to use the line idea with a good approximation. 
-
-% There is an other little problem: you must be sure that the ecg filtered
-% signal IS the respiratory signal. A good way could be do some experiments
-% by computing manually the BR signal..
-
-
 figure(3)
-ECG=database.AER.S1.C1.data(:,3);
+ECG=database.JOG.S1.C3.data(:,3);
 if sum(isnan(ECG))>0
         ECG(isnan(ECG))=0;
 end
@@ -162,16 +122,40 @@ ecg_filt=filter(b,a,ECG);
 plot(ecg_filt,'b',LineWidth=2)
 hold on
 plot(ECG,'k:')
-title(['ECG drift signal ',num2str(i)])
-xlim([0,15000])
+title('ECG drift signal')
+xlim([30000,50000])
 % line idea
 line=zeros(length(ecg_filt),1);
 plot(line,'r')  
 
-%% NEXT STEPS
-% 1. asset is the filtered signal is a good approximation of the
-% respiratory signal
-% 2. find out a way to automathize the BR extraction.
+%% Coclusion for the filtering
+% There are so many things that compromize the overall result. First of
+% all, not all the signals are enough "pure" to ensure a good filtration.
+% Thus, in many of them there could be a lot or artifacts. So we need
+% something that can, in some way, regolarize the signal (at least the
+% respiratory one). 
+% Moreover, the tecnique is still too semplicistic, in fact surely exlude
+% some informative contenents becouse of the sovrapposition between the
+% useful signal and the "noise".
+% To conclude, no one ensure that the filtered signal IS the respiratory
+% signal. It's a real problem!
 
+% So I need some time to stop and think. Some questions are:
+    % 1. Is the db really build well? do you really need millions of
+    % values? 
+    % 2. Can you build a way to construct a dataset of really usefull
+    % signals?
+    % 3. Once you have the new dataset, can you build the curve of the
+    % respiratory signal? Think about the hp 
+    % 4. If you think you are able to do it, which is the best way to
+    % extract the signal?
+    % 5. How to deal with the data not excluded from the db? Can you handle
+    % the problem of recostruction of the signal?
 
+ % These questions are trivial. You must define the breakpoints of the
+ % project: where you want to go? A description of all the time of
+ % acquisition? 
+
+ % Moreover, are there some algorithms that are the state of art into this
+ % field. Find them and figure out how to use them. 
 
