@@ -73,23 +73,84 @@ end
     title('New ECG corrected' )
     ylim([-0.5,0.5])
 
+%% Data selection 
+%     % model of data
+% model=temp_db.AER.S1.CRD1.ECG(993468:993573);
+% ref=model;
+% mask=zeros(1,length(model));
+% plot(model,Marker='o',LineStyle='none')
+% 
+% mask(1)=1;
+% mask(12)=1;
+% mask(29)=1;
+% mask(40)=1;
+% mask(45)=1;
+% mask(50)=1;
+% mask(54)=1;
+% mask(58)=1;
+% mask(76)=1;
+% %mask(95)=1;
+% mask(end)=1;
+% 
+% model=model(mask==1);
+% %I would like to extract a "smoothed" model
+% ts=1:1:length(model);
+% B=diag(ones(1,length(model)));
+% m=3;
+% sd2=0.01;
+% tv=0.02:0.02:ts(end);
+% [uhat,~ ,~ ,~ ,~ ,~ ]=smoothdiscrepancy(ts,model,B,sd2,tv,m);
+% 
+% 
+% plot(ts,model,'bo',tv, uhat,'r-')
+% %%
+% % Finally the model of data.
+% reference=uhat(round(ts/0.02));
+% reference=repmat(reference,50,1);
+% % Now with such model I'll pass all the dataset to find if and where there
+% % are possible candidates to our analysis
+% window=2000;
+% step=length(reference);
+% 
+% sets=["AER","BAS","CRO","FIT","JOG","MID","RUN","SOC","TEN","ZUM"];
+% 
+% for i=1:1 %length(sets)
+%     set=sets(i);
+%     for j=2:2 %length(fieldnames(temp_db.(set)))
+%         s=['S',num2str(j)];
+%         for k=1:1 %length(fieldnames(temp_db.(set).(s)))
+%             crd=['CRD',num2str(k)];
+%             ECG=temp_db.(set).(s).(crd).ECG;
+%             candidate=[];
+%             for h=1:step:length(ECG)-step
+%                 R=corr(reference, ECG(h:h+step-1));
+%                 if R>0
+%                     candidate=[candidate;ECG(h:h+step-1)];
+%                     disp(['Candidate has length = ',num2str(length(candidate))])
+% 
+%                 elseif R<0 || isnan(R)
+%                     disp(R)
+%                     candidate=[candidate;zeros(step,1)];
+%                 else
+%                     disp('aooo')
+%                     break
+%                 end
+%             end
+%         end
+%     end
+% end
+% %%
+% plot(candidate)
+% ylim([-0.2,0.2])
 
-
-
-
-
-
-% IDEA: eseguo un primo undersampling dell'ecg riportandolo a 1hz. Proseguo
-% poi eseguendo una prima pulizia: taglio tutto ciò che è al di fuori dei
-% valori fisiologici (attenzione, sarà necessario togliere la media). Poi
-% estraggo una forma d'onda accettabile e decido a priori la lunghezza del
-% vettore. Estraggo un numero casuale dal quale partire (meglio pensare bene a come strarlo). Da lì eseguo un
-% ciclo che correla la forma d'onda di riferimento con il segnale. Se R è
-% maggiore di una certa soglia (posso fare più prove, ma direi attorno al
-% 75%) allora tengo la porzione e proseguo. Se R è inferiore, interrompo e
-% ricomincio dal valore successivo. Interrompo quando raggiungo la
-% lunghezza prestabilita. Inoltre devo tenere traccia dell'indice di
-% partenza per poter estrarre correttamente gli altri segnali.
+% Il metodo della correlazione non è un buon metodo si a alivello
+% computazionale che a livello uqalitativo. In sostanza si perde troppo
+% tempo.
+% Potrei usare un'altra idea: i run "validi" per la mia analisi sono quelli
+% che, in un certo itervallo abbastanza lungo, non presentano zeri (proprio
+% zero non è mai l'ecg.) Quindi potrei fissare un intervallo abbastanza
+% lungo e dire che considero come porzione utile del segnale quel medesimo
+% intervallo.
 
 % Rigurado questa procedura, essendo comunque ancora relativa alla pulizia
 % dei dati, sono abbastanza libero. Potrei addirittura valutare di
