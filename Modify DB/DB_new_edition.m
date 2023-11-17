@@ -142,7 +142,39 @@ end
 % %%
 % plot(candidate)
 % ylim([-0.2,0.2])
-
+% window=2000;
+% step=length(reference);
+% 
+% sets=["AER","BAS","CRO","FIT","JOG","MID","RUN","SOC","TEN","ZUM"];
+% 
+% for i=1:1 %length(sets)
+%     set=sets(i);
+%     for j=2:2 %length(fieldnames(temp_db.(set)))
+%         s=['S',num2str(j)];
+%         for k=1:1 %length(fieldnames(temp_db.(set).(s)))
+%             crd=['CRD',num2str(k)];
+%             ECG=temp_db.(set).(s).(crd).ECG;
+%             candidate=[];
+%             for h=1:step:length(ECG)-step
+%                 R=corr(reference, ECG(h:h+step-1));
+%                 if R>0
+%                     candidate=[candidate;ECG(h:h+step-1)];
+%                     disp(['Candidate has length = ',num2str(length(candidate))])
+% 
+%                 elseif R<0 || isnan(R)
+%                     disp(R)
+%                     candidate=[candidate;zeros(step,1)];
+%                 else
+%                     disp('aooo')
+%                     break
+%                 end
+%             end
+%         end
+%     end
+% end
+% %%
+% plot(candidate)
+% ylim([-0.2,0.2])
 % Il metodo della correlazione non è un buon metodo si a alivello
 % computazionale che a livello uqalitativo. In sostanza si perde troppo
 % tempo.
@@ -151,6 +183,28 @@ end
 % zero non è mai l'ecg.) Quindi potrei fissare un intervallo abbastanza
 % lungo e dire che considero come porzione utile del segnale quel medesimo
 % intervallo.
+
+
+% Here I use an other way to extrapolate the ecg track form the original db
+% with zeros inside. First, with a mask, i have evaluated the size of the
+% pre and post processing ecg. Based on such evaluation i fixed a window of
+% interest, where i can assume that there is an ecg track enought regular. 
+% Then i will operate data augmentation on the extrapolated dataset to have
+% the correct number of samples.
+
+% The first step allow us to find out that there are some track equal to
+% zero, so we can exclude them. So the pipeline now is:
+    % 1 cleaning data from traks equal to zero (made by the function
+        % database cleaning with flag of extraction = 0
+    % 2 extraction of the ecg track and data augmentation of the other
+        % traks, building the final dataset, made by the same function with
+        % flag =1 
+
+[temp_db,ecg_length_sets]=database_cleaning(temp_db,0); % Note that this function does not change the structure of the db
+%%
+disp(min(ecg_length_sets(:,2))) % 43228
+disp(max(ecg_length_sets(:,2))) % 1645537
+
 
 % Rigurado questa procedura, essendo comunque ancora relativa alla pulizia
 % dei dati, sono abbastanza libero. Potrei addirittura valutare di
