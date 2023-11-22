@@ -39,10 +39,10 @@ ecg_length_sets=[]; % length ecg, length new ecg, size reduction
 
 %% Body
 %% DB reading
-for h=1: length(sets)
+for h=1: 1 % length(sets)
     set=sets(h);
 
-    for j=1:length(fieldnames(temp_db.(set)))
+    for j=1:1 %length(fieldnames(temp_db.(set)))
         s=['S',num2str(j)];
 
         for k=1:length(fieldnames(temp_db.(set).(s)))
@@ -85,31 +85,34 @@ for h=1: length(sets)
                     augmentationFactor = 250;
                     % Augment data
                     % Original vector recorded at 1Hz
-                    originalVector = RR;
+                    originalVector = RR(1:50);
+
+                    % Frequency augmentation factor
+                    augmentationFactor = 20;
 
                     % Augment data
-                    augmentedVector = zeros(1, length(RR) * augmentationFactor);
+                    augmentedVector = zeros(1, length(originalVector) * augmentationFactor);
+
+                    % Use indexing and concatenation for efficiency
                     for i = 1:augmentationFactor
                         augmentedVector(i:augmentationFactor:end) = RR;
                     end
-                    RR=augmentedVector;
+                    augmentedVector = zeros(1, length(originalVector) * augmentationFactor);
 
-                    augmentedVector = zeros(1, length(BR) * augmentationFactor);
+                    % Use indexing and concatenation for efficiency
                     for i = 1:augmentationFactor
                         augmentedVector(i:augmentationFactor:end) = BR;
                     end
-                    BR=augmentedVector;
+                    augmentedVector = zeros(1, length(originalVector) * augmentationFactor);
 
-                    augmentedVector = zeros(1, length(HR) * augmentationFactor);
+                    % Use indexing and concatenation for efficiency
                     for i = 1:augmentationFactor
                         augmentedVector(i:augmentationFactor:end) = HR;
                     end
-                    HR=augmentedVector;
-                  
 
-                    % RR = reshape(repmat(RR, augmentationFactor, 1), 1, [])';
-                    % HR = reshape(repmat(HR, augmentationFactor, 1), 1, [])';
-                    % BR = reshape(repmat(BR, augmentationFactor, 1), 1, [])';
+                    RR = reshape(repmat(RR, augmentationFactor, 1), 1, [])';
+                    HR = reshape(repmat(HR, augmentationFactor, 1), 1, [])';
+                    BR = reshape(repmat(BR, augmentationFactor, 1), 1, [])';
                    
                     %% New dataset
                     % Extract the sub-vector for ECG

@@ -200,20 +200,28 @@ end
         % traks, building the final dataset, made by the same function with
         % flag =1 
 
-[temp_db,ecg_length_sets]=database_cleaning(temp_db,0);
-% Note that this function does not change the structure of the db
+[temp_db,ecg_length_sets]=database_cleaning(temp_db,0); % Note that this function does not change the structure of the db
 
+disp(min(ecg_length_sets(:,2))) % 43228
+disp(max(ecg_length_sets(:,2))) % 1645537
+%% ECG run extraction 
+temp_temp_db=temp_db;
+[temp_temp_db,ecg_length_sets]=database_cleaning(temp_temp_db,1); % > 30 min of work!!
 
+%% Inspecting results
+figure(3)
+subplot(411)
+plot(temp_temp_db.AER.S1.CRD1.ECG)
+title('ECG')
+subplot(412)
+plot(temp_temp_db.AER.S1.CRD1.RR)
+title('RR inter')
+subplot(413)
+plot(temp_temp_db.AER.S1.CRD1.HR)
+title('Heart Rate')
+subplot(414)
+plot(temp_temp_db.AER.S1.CRD1.BR)
+title('Breathing Rate')
 
-
-% Rigurado questa procedura, essendo comunque ancora relativa alla pulizia
-% dei dati, sono abbastanza libero. Potrei addirittura valutare di
-% escludere due tipologie di dataset:
-    % 1. dataset undersampled comunque troppo corti
-    % 2. dataset che non permettono l'estrazione di alcun segnale utile
-    % (tutti zeri o nan)
-
-% poi potrei usare questo nuovo dataset per le analisi in frequenza e
-% magari per valutare qualche semplice modello
 
 
